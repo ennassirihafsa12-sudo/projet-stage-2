@@ -1,0 +1,107 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../views/**/*.blade.php';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-arabic: 'Noto Naskh Arabic', 'Segoe UI', Tahoma, sans-serif;
+
+    --color-marine: #1a2744;
+    --color-marine-light: #243656;
+    --color-marine-dark: #121a2e;
+    --color-dore: #c9a227;
+    --color-dore-hover: #b8921f;
+    --color-dore-light: #f5ecd4;
+    --color-gris-fonce: #2c3338;
+    --color-gris-moyen: #5a6268;
+    --color-gris-clair: #e8eaed;
+}
+
+@layer components {
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl bg-dore px-5 py-2.5 text-sm font-semibold text-marine shadow-md shadow-slate-100/50 transition hover:bg-dore-hover focus:outline-none focus:ring-2 focus:ring-dore focus:ring-offset-2;
+    }
+
+    .btn-secondary {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl border border-gris-clair bg-white px-5 py-2.5 text-sm font-medium text-gris-fonce shadow-sm transition hover:bg-gris-clair focus:outline-none focus:ring-2 focus:ring-marine focus:ring-offset-2;
+    }
+
+    .card-panel {
+        @apply rounded-2xl border border-gris-clair/80 bg-white shadow-md shadow-slate-100/50;
+    }
+
+    .card-panel-lg {
+        @apply rounded-3xl border border-gris-clair/80 bg-white shadow-md shadow-slate-100/50;
+    }
+
+    .section-title {
+        @apply font-semibold text-dore;
+    }
+
+    .text-body {
+        @apply text-gris-fonce;
+    }
+
+    .text-muted {
+        @apply text-gris-moyen;
+    }
+
+    .link-marine {
+        @apply font-medium text-marine transition hover:text-dore;
+    }
+
+    .input-field {
+        @apply w-full rounded-xl border border-gris-clair bg-white px-4 py-2.5 text-gris-fonce shadow-sm placeholder:text-gris-moyen focus:border-dore focus:outline-none focus:ring-2 focus:ring-dore/30;
+    }
+
+    .label-field {
+        @apply mb-1.5 block text-sm font-medium text-gris-fonce;
+    }
+
+    .table-head {
+        @apply bg-white text-gris-moyen;
+    }
+
+    .nav-active {
+        @apply flex items-center gap-3 rounded-xl bg-dore px-3 py-2.5 text-sm font-semibold text-marine shadow-sm;
+    }
+
+    .nav-item {
+        @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/85 transition hover:bg-marine-light hover:text-white;
+    }
+
+    .alert-success {
+        @apply mb-6 rounded-2xl border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800 shadow-sm;
+    }
+
+    .alert-error {
+        @apply mb-6 rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800 shadow-sm;
+    }
+
+    .lettre-input {
+        @apply w-full border-0 border-b border-dashed border-dore/40 bg-transparent px-1 py-0.5 text-inherit outline-none transition focus:border-dore focus:bg-dore-light/20 focus:ring-0;
+    }
+
+    .lettre-input-inline {
+        @apply inline-block min-w-[8ch] border-0 border-b border-dashed border-dore/40 bg-transparent px-1 py-0 text-inherit outline-none focus:border-dore focus:bg-dore-light/30;
+    }
+
+    .dropdown-panel {
+        @apply absolute z-50 mt-2 overflow-hidden rounded-2xl border border-gris-clair bg-marine py-1 shadow-lg shadow-slate-900/20;
+    }
+
+    .dropdown-item {
+        @apply flex w-full items-center gap-2 px-4 py-2.5 text-sm text-white/90 transition hover:bg-marine-light hover:text-dore;
+    }
+
+    .dropdown-item-active {
+        @apply flex w-full items-center gap-2 bg-marine-light px-4 py-2.5 text-sm font-semibold text-dore;
+    }
+}
+
+html[lang='ar'] body {
+    font-family: var(--font-arabic);
+}
