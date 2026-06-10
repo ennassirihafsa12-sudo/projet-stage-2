@@ -31,9 +31,30 @@
                     }
                 }
             @endphp
-            <a href="{{ route($item['route']) }}" class="{{ $active ? 'nav-active' : 'nav-item' }}">
-                @include('components.icons.'.$item['icon'])
-                {{ $item['label'] }}
+            <a href="{{ route($item['route']) }}" class="{{ $active ? 'nav-active' : 'nav-item' }} flex items-center justify-between">
+                <span class="flex items-center gap-3">
+                    @include('components.icons.'.$item['icon'])
+                    {{ $item['label'] }}
+                </span>
+                @if ($item['route'] === 'notifications.index')
+                    @php
+                        $unreadCount = once(fn () => \App\Models\Notification::where('lu', false)->count());
+                    @endphp
+                    @if ($unreadCount > 0)
+                        <span class="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-bold text-white">
+                            {{ $unreadCount }}
+                        </span>
+                    @endif
+                @elseif ($item['route'] === 'rappels.index')
+                    @php
+                        $unreadRappelsCount = once(fn () => \App\Models\Notification::whereNotNull('echeance_at')->where('lu', false)->count());
+                    @endphp
+                    @if ($unreadRappelsCount > 0)
+                        <span class="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-bold text-white">
+                            {{ $unreadRappelsCount }}
+                        </span>
+                    @endif
+                @endif
             </a>
         @endforeach
     </nav>

@@ -10,6 +10,8 @@
                 :titre="$rappel->titre"
                 :temps="$rappel->tempsRelatif()"
                 :type="$rappel->type"
+                :message="$rappel->message"
+                :marche="$rappel->marche"
             />
         @empty
             <p class="rounded-xl bg-white p-8 text-center text-slate-500 shadow-sm">Aucun rappel pour le moment.</p>

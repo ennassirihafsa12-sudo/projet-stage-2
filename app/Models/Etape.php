@@ -19,15 +19,12 @@ class Etape extends Model
         'statut',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'nom' => EtapeNom::class,
-            'date_prevue' => 'date',
-            'date_reelle' => 'date',
-            'statut' => EtapeStatut::class,
-        ];
-    }
+    protected $casts = [
+        'nom' => EtapeNom::class,
+        'date_prevue' => 'date',
+        'date_reelle' => 'date',
+        'statut' => EtapeStatut::class,
+    ];
 
     public function marche(): BelongsTo
     {

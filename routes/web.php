@@ -18,6 +18,10 @@ Route::get('/acceuil', function () {
 })->name('home');
 
 Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+
     return view('welcome');
 })->name('welcome');
 
@@ -37,7 +41,9 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile/photo', [ProfileController::class, 'destroyPhoto'])->name('profile.photo.destroy');
 
-    Route::resource('marches', MarcheController::class);
+    Route::resource('marches', MarcheController::class)->parameters([
+        'marches' => 'marche',
+    ]);
 
     Route::get('/etapes', [EtapeController::class, 'index'])->name('etapes.index');
     Route::get('/marches/{marche}/etapes', [EtapeController::class, 'show'])->name('etapes.show');

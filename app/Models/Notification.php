@@ -39,16 +39,40 @@ class Notification extends Model
             return $this->created_at->diffForHumans();
         }
 
-        $diff = now()->diffInHours($this->echeance_at, false);
+        $now = now()->startOfMinute();
+        $target = $this->echeance_at->copy()->startOfMinute();
 
-        if ($diff < 0) {
-            return 'En retard depuis '.abs($diff).' heures';
+        $diffInMinutes = $now->diffInMinutes($target, false);
+        $isPast = $diffInMinutes < 0;
+        $absMinutes = abs($diffInMinutes);
+
+        $days = (int) floor($absMinutes / (24 * 60));
+        $hours = (int) floor(($absMinutes % (24 * 60)) / 60);
+        $minutes = (int) ($absMinutes % 60);
+
+        $parts = [];
+        if ($days > 0) {
+            $parts[] = $days.' jour'.($days > 1 ? 's' : '');
+        }
+        if ($hours > 0) {
+            $parts[] = $hours.' heure'.($hours > 1 ? 's' : '');
+        }
+        if ($minutes > 0 || empty($parts)) {
+            $parts[] = $minutes.' minute'.($minutes > 1 ? 's' : '');
         }
 
-        if ($diff < 48) {
-            return 'Dans '.$diff.' heures';
+        $durationString = '';
+        if (count($parts) === 1) {
+            $durationString = $parts[0];
+        } elseif (count($parts) > 1) {
+            $last = array_pop($parts);
+            $durationString = implode(', ', $parts).' et '.$last;
         }
 
-        return 'Dans '.$this->echeance_at->diffInDays(now()).' jours';
+        if ($isPast) {
+            return 'En retard de '.$durationString;
+        }
+
+        return 'Dans '.$durationString;
     }
 }

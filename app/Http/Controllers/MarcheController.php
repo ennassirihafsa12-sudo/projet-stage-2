@@ -17,9 +17,21 @@ class MarcheController extends Controller
         return view('marches.index', compact('marches'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('marches.create');
+        $marche = new Marche($request->only([
+            'numero',
+            'objet',
+            'date_publication',
+            'date_ouverture_plis',
+            'validite_offre_jours',
+            'entreprise',
+            'montant_estimatif',
+            'responsable',
+            'description',
+        ]));
+
+        return view('marches.create', compact('marche'));
     }
 
     public function store(Request $request): RedirectResponse

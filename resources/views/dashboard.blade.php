@@ -74,14 +74,14 @@
                     @forelse ($marchesRecents as $marche)
                         <tr class="transition hover:bg-dore-light/30">
                             <td class="px-6 py-4 font-medium">
-                                <a href="{{ route('marches.show', $marche) }}" class="link-marine">{{ $marche->numero }}</a>
+                                <a href="{{ route('marches.show', ['marche' => $marche->id]) }}" class="link-marine">{{ $marche->numero }}</a>
                             </td>
                             <td class="px-6 py-4">{{ Str::limit($marche->objet, 40) }}</td>
                             <td class="px-6 py-4">{{ $marche->etapeCouranteLabel() }}</td>
                             <td class="px-6 py-4">{{ $marche->tempsRestant() ?? '—' }}</td>
                             <td class="px-6 py-4"><x-statut-badge :statut="$marche->statut" /></td>
                             <td class="px-6 py-4 text-end">
-                                <a href="{{ route('marches.show', $marche) }}" class="link-marine">{{ __('app.dashboard.voir') }}</a>
+                                <a href="{{ route('marches.show', ['marche' => $marche->id]) }}" class="link-marine">{{ __('app.dashboard.voir') }}</a>
                             </td>
                         </tr>
                     @empty

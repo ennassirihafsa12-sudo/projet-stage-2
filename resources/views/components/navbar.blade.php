@@ -14,6 +14,21 @@
     </p>
 
     <div class="flex items-center gap-4">
+        @php
+            $unreadNotificationsCount = once(fn () => \App\Models\Notification::where('lu', false)->count());
+        @endphp
+        <a href="{{ route('notifications.index') }}" 
+           class="relative flex h-9 w-9 items-center justify-center rounded-xl border border-white/20 bg-marine-light text-white transition hover:border-dore hover:text-dore"
+           title="{{ __('app.nav.notifications') }}">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+            </svg>
+            @if ($unreadNotificationsCount > 0)
+                <span class="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white ring-2 ring-marine animate-pulse">
+                    {{ $unreadNotificationsCount }}
+                </span>
+            @endif
+        </a>
         <details class="group relative">
             <summary class="flex cursor-pointer list-none items-center gap-2 rounded-xl border border-white/20 bg-marine-light px-3 py-2 text-sm text-white transition hover:border-dore hover:text-dore [&::-webkit-details-marker]:hidden">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

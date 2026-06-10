@@ -39,7 +39,4 @@
         </table>
     </div>
 
-    <div class="mt-6">
-        <a href="{{ route('marches.show', ['marche' => $marche->id]) }}" class="text-blue-600 hover:underline">← Retour au détail du marché</a>
-    </div>
 @endsection

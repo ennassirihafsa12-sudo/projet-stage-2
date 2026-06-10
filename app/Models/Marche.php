@@ -73,6 +73,13 @@ class Marche extends Model
 
     public function etapeCourante(): ?Etape
     {
+        if ($this->relationLoaded('etapes')) {
+            return $this->etapes
+                ->filter(fn ($etape) => in_array($etape->statut, [EtapeStatut::EnAttente, EtapeStatut::PasCommencee], true))
+                ->sortBy('ordre')
+                ->first();
+        }
+
         return $this->etapes()
             ->whereIn('statut', [EtapeStatut::EnAttente, EtapeStatut::PasCommencee])
             ->orderBy('ordre')
