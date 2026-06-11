@@ -12,6 +12,7 @@
         :type="$type"
         :entreprise="$entreprise"
         :header="$header"
-        :editable="false" />
+        :editable="false"
+        :forPdf="true" />
 </body>
 </html>

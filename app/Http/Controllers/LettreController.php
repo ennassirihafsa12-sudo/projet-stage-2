@@ -26,15 +26,15 @@ class LettreController extends Controller
         $entreprise = $request->get('entreprise', $marche?->entreprise ?? '');
 
         $headerDefaults = [
-            'date' => now()->format('Y-m-d'),
+            'date'         => now()->format('Y-m-d'),
             'meeting_time' => '10:00',
-            'subject' => $marche ? $marche->objet : '',
+            'subject'      => $marche ? $marche->objet : '',
         ];
 
         $header = array_merge($headerDefaults, array_filter([
-            'date' => $request->get('header_date'),
+            'date'         => $request->get('header_date'),
             'meeting_time' => $request->get('header_meeting_time'),
-            'subject' => $request->get('header_subject'),
+            'subject'      => $request->get('header_subject'),
         ], fn ($v) => $v !== null && $v !== ''));
 
         return view('lettres.index', compact('marches', 'marche', 'type', 'entreprise', 'header'));
@@ -43,24 +43,22 @@ class LettreController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'marche_id' => 'required|exists:marches,id',
-            'type' => 'required|in:acceptation,refus',
+            'marche_id'  => 'required|exists:marches,id',
+            'type'       => 'required|in:acceptation,refus',
             'entreprise' => 'required|string|max:255',
-            'format' => 'required|in:pdf',
+            'format'     => 'required|in:pdf',
         ]);
 
         $lettre = Lettre::create($validated);
 
         $query = [
-            'marche_id' => $lettre->marche_id,
-            'type' => $lettre->type->value,
+            'marche_id'  => $lettre->marche_id,
+            'type'       => $lettre->type->value,
             'entreprise' => $lettre->entreprise,
         ];
 
         foreach ([
-            'header_republic', 'header_motto', 'header_authority', 'header_service',
-            'header_ville', 'header_reference', 'header_meeting_date',
-            'header_meeting_time', 'header_meeting_place',
+            'header_date', 'header_meeting_time', 'header_subject',
         ] as $field) {
             if ($request->filled($field)) {
                 $query[$field] = $request->input($field);
@@ -74,14 +72,14 @@ class LettreController extends Controller
 
     public function preview(Request $request): View
     {
-        $marche = Marche::findOrFail($request->marche_id);
-        $type = LettreType::from($request->type);
+        $marche     = Marche::findOrFail($request->marche_id);
+        $type       = LettreType::from($request->type);
         $entreprise = $request->entreprise ?? $marche->entreprise ?? 'Entreprise';
 
         $header = [
-            'date' => $request->get('header_date', now()->format('Y-m-d')),
+            'date'         => $request->get('header_date', now()->format('Y-m-d')),
             'meeting_time' => $request->get('header_meeting_time', '10:00'),
-            'subject' => $request->get('header_subject', $marche->objet),
+            'subject'      => $request->get('header_subject', $marche->objet),
         ];
 
         return view('lettres.preview', compact('marche', 'type', 'entreprise', 'header'));
@@ -90,8 +88,8 @@ class LettreController extends Controller
     public function exportOfficialPdf(Marche $marche)
     {
         $data = [
-            'entreprise' => $marche->entreprise ?: 'STE ASWAK MACRO NEGOCE S.A.R.L',
-            'dateLine' => optional($marche->date_publication)
+            'entreprise'   => $marche->entreprise ?: 'STE ASWAK MACRO NEGOCE S.A.R.L',
+            'dateLine'     => optional($marche->date_publication)
                 ? $marche->date_publication->locale('fr')->translatedFormat('j MMMM YYYY')
                 : '10 مارس 2025',
             'tenderNumber' => '01 / 2025',
@@ -108,17 +106,21 @@ class LettreController extends Controller
 
     public function download(Lettre $lettre)
     {
-        $marche = $lettre->marche;
-        $type = $lettre->type;
+        $marche     = $lettre->marche;
+        $type       = $lettre->type;
         $entreprise = $marche->entreprise ?? $lettre->entreprise;
 
+        // Heure avec période arabe
+        $heureFormatee = $this->formatArabicTime('10:00');
+
         $data = [
-            'marche' => $marche,
+            'marche'     => $marche,
+            'type'       => $type,
             'entreprise' => $entreprise,
-            'header' => [
-                'date' => $this->formatFrenchDate(now()->format('Y-m-d')), 
-                'meeting_time' => '10:00',
-                'subject' => $marche ? $marche->objet : '',
+            'header'     => [
+                'date'         => $this->formatArabicDate(now()->format('Y-m-d')),
+                'meeting_time' => $heureFormatee,
+                'subject'      => $marche->objet ?? '',
             ],
         ];
 
@@ -126,33 +128,35 @@ class LettreController extends Controller
         $pdf->setPaper('A4', 'portrait');
         $pdf->setOption('isRemoteEnabled', true);
 
-        $fileName = 'lettre-'.$marche->numero.'-'.$type->value.'.pdf';
+        $fileName = 'lettre-' . $marche->numero . '-' . $type->value . '.pdf';
         $fileName = str_replace(['/', '\\'], '-', $fileName);
+
         return $pdf->download($fileName);
     }
 
     public function downloadPdf(Request $request)
     {
         $request->validate([
-            'marche_id' => 'required|exists:marches,id',
-            'type' => 'required|string',
-            'entreprise' => 'nullable|string|max:255',
-            'header_date' => 'required|string',
+            'marche_id'           => 'required|exists:marches,id',
+            'type'                => 'required|string',
+            'entreprise'          => 'nullable|string|max:255',
+            'header_date'         => 'required|string',
             'header_meeting_time' => 'required|string',
-            'header_subject' => 'required|string',
+            'header_subject'      => 'required|string',
         ]);
 
-        $marche = Marche::findOrFail($request->marche_id);
-        $type = $request->type;
-        $entreprise = $marche->entreprise ?? $request->entreprise ?? 'STE ASWAK MACRO NEGOCE S.A.R.L';
+        $marche     = Marche::findOrFail($request->marche_id);
+        $type       = LettreType::from($request->type);
+        $entreprise = $request->entreprise ?? $marche->entreprise ?? 'Entreprise';
 
         $data = [
-            'marche' => $marche,
+            'marche'     => $marche,
+            'type'       => $type,
             'entreprise' => $entreprise,
-            'header' => [
-                'date' => $this->formatFrenchDate($request->header_date),
-                'meeting_time' => $request->header_meeting_time,
-                'subject' => $request->header_subject,
+            'header'     => [
+                'date'         => $this->formatArabicDate($request->header_date),
+                'meeting_time' => $this->formatArabicTime($request->header_meeting_time),
+                'subject'      => $request->header_subject,
             ],
         ];
 
@@ -160,11 +164,45 @@ class LettreController extends Controller
         $pdf->setPaper('A4', 'portrait');
         $pdf->setOption('isRemoteEnabled', true);
 
-        $fileName = 'lettre-' . ($marche ? $marche->numero : 'marche') . '-' . $type . '.pdf';
+        $fileName = 'lettre-' . $marche->numero . '-' . $type->value . '.pdf';
         $fileName = str_replace(['/', '\\'], '-', $fileName);
+
         return $pdf->download($fileName);
     }
 
+    // ─── Helpers ────────────────────────────────────────────────
+
+    /**
+     * Formate une date en arabe  Ex: "10 يونيو 2026"
+     */
+    private function formatArabicDate(string $date): string
+    {
+        try {
+            Carbon::setLocale('ar');
+            return Carbon::parse($date)->translatedFormat('j F Y');
+        } catch (\Exception $e) {
+            return $date;
+        }
+    }
+
+    /**
+     * Formate une heure avec période arabe  Ex: "10:00 صباحا"
+     */
+    private function formatArabicTime(string $time): string
+    {
+        try {
+            [$heure] = explode(':', $time);
+            $periode = (int)$heure < 12 ? 'صباحا' : 'مساء';
+            return $time . ' ' . $periode;
+        } catch (\Exception $e) {
+            return $time;
+        }
+    }
+
+    /**
+     * Formate une date en français  Ex: "10 juin 2026"
+     * Gardée pour exportOfficialPdf si besoin
+     */
     private function formatFrenchDate(string $date): string
     {
         try {
@@ -176,18 +214,18 @@ class LettreController extends Controller
         }
     }
 
+    // ─── Static helpers (PDF rendering) ─────────────────────────
+
     public static function shape(string $text, int $maxChars = 2000): string
     {
         if (class_exists(\ArPHP\I18N\Arabic::class)) {
             try {
                 $arabic = new \ArPHP\I18N\Arabic('Glyphs');
-
                 return $arabic->utf8Glyphs($text, $maxChars);
             } catch (\Exception $e) {
                 return $text;
             }
         }
-
         return $text;
     }
 
@@ -200,8 +238,8 @@ class LettreController extends Controller
         }
 
         $bytes = (string) file_get_contents($path);
-        $mime = str_starts_with($bytes, "\xFF\xD8\xFF") ? 'image/jpeg' : 'image/png';
+        $mime  = str_starts_with($bytes, "\xFF\xD8\xFF") ? 'image/jpeg' : 'image/png';
 
-        return 'data:'.$mime.';base64,'.base64_encode($bytes);
+        return 'data:' . $mime . ';base64,' . base64_encode($bytes);
     }
 }

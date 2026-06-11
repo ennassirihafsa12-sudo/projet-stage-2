@@ -5,14 +5,60 @@
     <title>وثيقة رسمية</title>
     @php
         use App\Http\Controllers\LettreController;
+        use App\Enums\LettreType;
+
         $arabic = fn (string $text): string => LettreController::shape($text);
+
+        $isAcceptation = $type === LettreType::Acceptation
+            || $type === LettreType::Acceptation->value
+            || $type === 'acceptation';
+
+        $dateVal       = $header['date'] ?? now()->format('Y-m-d');
+        $timeVal       = $header['meeting_time'] ?? '10:00';
+        $entrepriseVal = $entreprise ?: ($marche?->entreprise ?? 'STE ASWAK MACRO NEGOCE S.A.R.L');
+        $numeroMarche  = $marche?->numero ?? '2025/01';
+
+        $months = [
+            1=>'يناير', 2=>'فبراير', 3=>'مارس',   4=>'أبريل',
+            5=>'ماي',   6=>'يونيو',  7=>'يوليوز', 8=>'غشت',
+            9=>'شتنبر', 10=>'أكتوبر',11=>'نونبر', 12=>'دجنبر',
+        ];
+
+        try {
+            $dt         = \Carbon\Carbon::parse($dateVal);
+            $dateArabic = $dt->day . ' ' . $months[$dt->month] . ' ' . $dt->year;
+        } catch (\Exception $e) {
+            $dateArabic = $dateVal;
+        }
+
+        [$h]     = explode(':', $timeVal);
+        $periode = (int)$h < 12 ? 'صباحا' : 'مساء';
+
+        $dateLineText = 'ورزازات في: ' . $dateArabic;
+
+        if ($isAcceptation) {
+            $bodyText     = 'وبعد، علاقة بالموضوع المشار إليه أعلاه، يشرفني ان اخبركم أن لجنة طلب العروض المجتمعة يوم '
+                . $dateArabic
+                . ' على الساعة '
+                . $timeVal
+                . ' ' . $periode
+                . '، في قاعة الاجتماعات بالمديرية الإقليمية للعدل بورزازات، قد قبلت العرض المالي الذي تقدمتم الله في انتظار المصادقة عليه من طرف السلطات المختصة لذا يتعين عليكم الاتصال بنا قصد تتميم الإجراءات الإدارية المتعلقة بملفكم.';
+            $followUpText = '';
+        } else {
+            $bodyText     = 'وبعد، علاقة بالموضوع المشار إليه أعلاه، يؤسفنا ان اخبركم أن لجنة طلب العروض المجتمعة يوم '
+                . $dateArabic
+                . ' على الساعة '
+                . $timeVal
+                . ' ' . $periode
+                . '، في قاعة الاجتماعات بالمديرية الإقليمية للعدل بورزازات، لم تقبل العرض المالي الذي تقدمتم به.';
+            $followUpText = 'نشكركم على اهتمامكم بطلب العروض هذا.';
+        }
     @endphp
     <style>
         @page {
             size: A4;
             margin: 15mm 12mm;
         }
-
         body {
             margin: 0;
             padding: 0;
@@ -21,161 +67,95 @@
             font-family: 'DejaVu Sans', sans-serif;
             color: #111827;
             font-size: 13px;
-            line-height: 1.55;
+            line-height: 1.6;
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
         }
-
         td {
             vertical-align: top;
-        }
-
-        .header-table td {
             padding: 0 6px;
         }
-
-        .header-title {
-            margin: 0 0 4px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .tifinagh {
-            font-family: 'Noto Sans Tifinagh', sans-serif;
-            font-size: 11px;
-            line-height: 1.4;
-        }
-
-        .crest {
-            text-align: center;
-        }
-
-        .crest img {
-            height: 82px;
-            width: auto;
-            display: inline-block;
-        }
-
-        .date-line {
-            display: inline-block;
-            padding-bottom: 3px;
-            border-bottom: 1px solid #111;
-            font-size: 12px;
-            margin: 10px 0 18px;
-        }
-
-        .receiver-box {
-            width: 100%;
-            padding: 12px 14px;
-            margin-bottom: 18px;
-            text-align: center;
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        .receiver-box span {
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .subject-box {
-            padding: 12px 14px;
-            margin-bottom: 16px;
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        .subject-title {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 8px;
-            font-size: 13px;
-        }
-
-        .tender-number {
-            display: inline-block;
-            padding: 1px 8px;
-            margin: 0 4px;
-            font-weight: bold;
-        }
-
-        .underline {
-            text-decoration: underline;
-            text-decoration-color: #111;
-            text-decoration-thickness: 1px;
-            text-decoration-skip-ink: none;
-        }
-
-        .greeting {
-            text-align: center;
-            margin: 18px 0 16px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .body-text {
-            margin: 0;
-            font-size: 13px;
-            line-height: 1.7;
-            text-align: right;
-        }
-
-        .footer {
-            text-align: center;
-            font-weight: bold;
-            margin-top: 24px;
-            font-size: 13px;
-        }
-
-        .signoff {
-            text-align: left;
-            margin-top: 12px;
-            font-weight: bold;
-            font-size: 13px;
+        p {
+            margin: 3px 0;
         }
     </style>
 </head>
 <body>
-    <table class="header-table">
+
+    {{-- ═══ EN-TÊTE ═══ --}}
+    <table style="margin-bottom: 8px;">
         <tr>
-            <td style="width: 32%; text-align: left;">
-                <p class="header-title tifinagh">ⵜⴰⵎⵇⴰⵔⵜ ⵏ ⵍⵎⵖⵔⵉⴱ</p>
-                <p class="header-title tifinagh">ⵜⴰⵎⵉⵙⵜⵔ ⵏ ⵢⴰⵢⵖⵓⵔ</p>
-                <p class="header-title tifinagh">ⵜⴰⴹⵢⵉⵏⵜ ⵏ ⴰⵢⵢⵍⴰⵏ ⵏ ⵏⴰⵢⵉ</p>
+            <td style="width: 33%; text-align: left; direction: ltr;">
+                <p style="font-weight: bold; font-size: 10px; margin: 2px 0;">ⵜⴰⵎⵇⴰⵔⵜ ⵏ ⵍⵎⵖⵔⵉⴱ</p>
+                <p style="font-weight: bold; font-size: 10px; margin: 2px 0;">ⵜⴰⵎⵉⵙⵜⵔ ⵏ ⵢⴰⵢⵖⵓⵔ</p>
+                <p style="font-size: 9px; margin: 2px 0;">ⵜⴰⴹⵢⵉⵏⵜ ⵏ ⴰⵢⵢⵍⴰⵏ ⵏ ⵏⴰⵢⵉ</p>
             </td>
-            <td class="crest" style="width: 36%;">
-                <img src="{{ App\Http\Controllers\LettreController::pdfLogoSrc() }}" alt="Logo">
+            <td style="width: 34%; text-align: center;">
+                <img src="{{ LettreController::pdfLogoSrc() }}" alt="Logo" style="height: 70px; width: auto;">
             </td>
-            <td style="width: 32%; text-align: right;">
-                <p class="header-title">{!! $arabic('المملكة المغربية') !!}</p>
-                <p class="header-title">{!! $arabic('وزارة العدل') !!}</p>
-                <p class="header-title">{!! $arabic('المديرية الإقليمية بورزازات') !!}</p>
+            <td style="width: 33%; text-align: right;">
+                <p style="font-weight: bold; font-size: 12px; margin: 2px 0;">{!! $arabic('المملكة المغربية') !!}</p>
+                <p style="font-weight: bold; font-size: 12px; margin: 2px 0;">{!! $arabic('وزارة العدل') !!}</p>
+                <p style="font-weight: bold; font-size: 12px; margin: 2px 0;">{!! $arabic('المديرية الإقليمية بورزازات') !!}</p>
             </td>
         </tr>
     </table>
 
-    <div class="date-line">{!! $arabic('ورزازات في:') !!} {{ $header['date'] ?? '10 مارس 2025' }}</div>
-
-    <div class="receiver-box">
-        <span>{!! $arabic('المديرية الإقليمية للعدل بورزازات') !!}</span>
-        <span>{!! $arabic('إلى السيد مدير شركة') !!}</span>
-        <span>{{ $entreprise }}</span>
-        <span>N° 28 Rue Al Kawakibi-Cité Dakhla Agadir.</span>
+    {{-- ═══ DATE ═══ --}}
+    <div style="margin: 10px 0 18px; text-align: right;">
+        <span style="display: inline-block; border-bottom: 1px solid #111; padding-bottom: 2px; font-size: 12px;">
+            {!! $arabic($dateLineText) !!}
+        </span>
     </div>
 
-    <div class="subject-box">
-        <span class="subject-title">{!! $arabic('الموضوع:') !!}</span>
-        <div>{!! $arabic('اخبار مخصوص طلب العروض المحتوم المبسطة رقم 2025/01 الخاص بشراء التوريدات الاستهلاكية المعلوماتية اللازية السير مصالح الدائرة القضائية بورزازات حصة') !!}</div>
+    {{-- ═══ DESTINATAIRE ═══ --}}
+    <div style="text-align: center; margin-bottom: 20px;">
+        <p style="font-size: 13px; font-weight: bold; margin: 5px 0;">
+            {!! $arabic('المديرية الإقليمية للعدل بورزازات') !!}
+        </p>
+        <p style="font-size: 13px; font-weight: bold; margin: 5px 0;">
+            {!! $arabic('إلى السيد مدير شركة') !!}
+        </p>
+        <p style="font-size: 14px; font-weight: bold; margin: 5px 0; direction: ltr;">
+            {{ $entrepriseVal }}
+        </p>
+        <p style="font-size: 12px; margin: 5px 0; direction: ltr;">
+            Nº 28 Rue Al Kawakibi-Cité Dakhla Agadir.
+        </p>
     </div>
 
-    <p class="greeting">{!! $arabic('سلام تام بوجود مولانا الإمام،') !!}</p>
+    {{-- ═══ SUJET ═══ --}}
+    <div style="margin-bottom: 16px; font-size: 13px; line-height: 1.7; text-align: right;">
+        <span style="font-weight: bold;">{!! $arabic('الموضوع') !!}</span>
+        {!! $arabic('اخبار مخصوص طلب العروض المحتوم المبسطة رقم') !!}
+        <span style="direction: ltr; unicode-bidi: embed;">{{ $numeroMarche }}</span>
+        {!! $arabic('الخاص بشراء التوريدات الاستهلاكية المعلوماتية اللازية السير مصالح الدائرة القضائية بورزازات حصة') !!}
+    </div>
 
-    <p class="body-text">{!! $arabic('2025 على الساعة العاشرة صباحا، في قاعة الاجتماعات بالمديرية الإقليمية للعدل بورزازات، قد قبلت العرض المالي الذي تقدمتم الله في انتظار المصادقة عليه من طرف السلطات المختصة لذا يتعين عليكم الاتصال بنا قصد تتميم الإجراءات الإدارية المتعلقة بملفكم') !!}</p>
+    {{-- ═══ SALUTATION ═══ --}}
+    <p style="text-align: center; font-weight: bold; font-size: 14px; margin: 18px 0;">
+        {!! $arabic('سلام تام بوجود مولانا الإمام،') !!}
+    </p>
 
-    <p class="footer">{!! $arabic('وتقبلوا سيدي فائق الاحترام والتقدير') !!}</p>
-    <p class="signoff">{!! $arabic('والسلام ./.') !!}</p>
+    {{-- ═══ CORPS ═══ --}}
+    <div style="font-size: 13px; line-height: 1.8; text-align: right; margin-bottom: 16px;">
+        <p style="margin-bottom: 10px;">{!! $arabic($bodyText) !!}</p>
+        @if ($followUpText)
+            <p>{!! $arabic($followUpText) !!}</p>
+        @endif
+    </div>
+
+    {{-- ═══ CLÔTURE ═══ --}}
+    <p style="text-align: center; font-weight: bold; font-size: 13px; margin-top: 24px;">
+        {!! $arabic('وتقبلوا سيدي فائق الاحترام والتقدير.') !!}
+    </p>
+
+    {{-- ═══ SIGNATURE ═══ --}}
+    <p style="text-align: right; font-weight: bold; font-size: 13px; margin-top: 12px;">
+        {!! $arabic('والسلام./.') !!}
+    </p>
+
 </body>
 </html>
